@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Record Management</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            margin: 20px;
+            background-color: #f4f4f4;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        form {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background: #5cb85c;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background: #4cae4c;
+        }
+
+        button:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th,
+        td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        .error {
+            color: red;
+            font-size: 0.9em;
+            margin-top: -5px;
+            margin-bottom: 10px;
+            display: none;
+        }
+
+        .nav-link {
+            display: block;
+            text-align: center;
+            margin: 20px 0;
+            padding: 6px;
+            background-color: #337ab7;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+        }
+
+        .nav-link:hover {
+            background-color: #3371a7;
+        }
+
+        img {
+            display: block;
+            margin: auto;
+        }
+
+        .table-scroll {
+            overflow-x: auto;
+        }
+
+        .links {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <img src="https://www.dlsud.edu.ph/images/about-logo.png" width="100" alt="DLSU-D Logo">
+        <h1>Student Record Management</h1>
+        <br>
+        <form id="studentForm">
+            <h2>Enter Student Information</h2>
+            <label for="studentName">Name:</label>
+            <input type="text" id="studentName" name="studentName" required>
+            <span class="error" id="nameError">Name is required.</span>
+            <label for="studentEmail">Email:</label>
+            <input type="email" id="studentEmail" name="studentEmail" required>
+            <span class="error" id="emailError">Valid email is required.</span>
+            <label for="studentId">Student ID:</label>
+            <input type="text" id="studentId" name="studentId" required>
+            <span class="error" id="idError">Student ID is required.</span>
+            <label for="studentMajor">Major:</label>
+            <select id="studentMajor" name="studentMajor" required>
+                <option value="">Select a Major</option>
+                <option value="Information Technology">Information Technology</option>
+                <option value="Computer Science">Computer Science</option>
+                <option value="Engineering">Engineering</option>
+                <option value="Business">Business</option>
+                <option value="Arts">Arts</option>
+                <option value="Science">Science</option>
+            </select>
+            <span class="error" id="majorError">Major is required.</span>
+            <label for="studentGrade">Grade (%):</label>
+            <input type="number" id="studentGrade" name="studentGrade" step="0.01" required>
+            <span class="error" id="gradeError">Please enter a percentage between 0 and 100.</span>
+            <p><strong>Calculated GPA:</strong> <span id="calculatedGPA">---</span></p>
+            <button type="submit">Submit Data</button>
+        </form>
+        <a href="./data.html" class="nav-link">View All Student Records</a>
+        <br>
+        <div class="data-display">
+            <h2>Recently added data</h2>
+            <div class="table-scroll">
+                <table id="studentDataTable">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Student ID</th>
+                            <th>Major</th>
+                            <th>Grade (%)</th>
+                            <th>GPA</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <br>
+        <div class="links">
+            <h2>Links</h2>
+            <ul>
+                <li><a href="https://www.dlsud.edu.ph/registrar/grades.htm" target="_blank">Grading Scale</a></li>
+                <li><a href="https://docs.google.com/spreadsheets/d/1G6Tr7theOKs6Ufckb_LQHQJr7JaCHtIG-AU9eLWHPO8/edit?usp=sharing"
+                        target="_blank">Google Sheets</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzXjF5cSkDhA6kX_lY74hatXI1PblRcUyoAgtfqk4kfKnOsst-lV96GzrcnDGC2yBgu/exec';
+        const form = document.getElementById('studentForm');
+        const dataTableBody = document.getElementById('studentDataTable').querySelector('tbody');
+        const calculatedGPAElement = document.getElementById('calculatedGPA');
+        const gradeInput = document.getElementById('studentGrade');
+
+        function validateForm() {
+            let isValid = true;
+            const errorElements = document.querySelectorAll('.error');
+            for (let i = 0; i < errorElements.length; i++) {
+                errorElements[i].style.display = 'none';
+            }
+            if (document.getElementById('studentName').value.trim() === '') {
+                document.getElementById('nameError').style.display = 'block';
+                isValid = false;
+            }
+            const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailPattern.test(document.getElementById('studentEmail').value)) {
+                document.getElementById('emailError').style.display = 'block';
+                isValid = false;
+            }
+            if (document.getElementById('studentId').value.trim() === '') {
+                document.getElementById('idError').style.display = 'block';
+                isValid = false;
+            }
+            if (document.getElementById('studentMajor').value === '') {
+                document.getElementById('majorError').style.display = 'block';
+                isValid = false;
+            }
+            const percentage = parseFloat(gradeInput.value);
+            if (isNaN(percentage) || percentage < 0 || percentage > 100) {
+                document.getElementById('gradeError').style.display = 'block';
+                isValid = false;
+            }
+            return isValid;
+        }
+
+        function calculateGPA(percentage) {
+            if (isNaN(percentage) || percentage < 0 || percentage > 100) return NaN;
+            switch (true) {
+                case (percentage >= 98): return 4.00;
+                case (percentage >= 95): return 3.75;
+                case (percentage >= 92): return 3.50;
+                case (percentage >= 89): return 3.25;
+                case (percentage >= 86): return 3.00;
+                case (percentage >= 83): return 2.75;
+                case (percentage >= 80): return 2.50;
+                case (percentage >= 77): return 2.25;
+                case (percentage >= 74): return 2.00;
+                case (percentage >= 71): return 1.75;
+                case (percentage >= 68): return 1.50;
+                case (percentage >= 64): return 1.25;
+                case (percentage >= 60): return 1.00;
+                default: return 0.00;
+            }
+        }
+
+        function addStudentRowToTable(student) {
+            const row = dataTableBody.insertRow(0);
+            row.insertCell().textContent = student.studentName;
+            row.insertCell().textContent = student.studentEmail;
+            row.insertCell().textContent = student.studentId;
+            row.insertCell().textContent = student.studentMajor;
+            row.insertCell().textContent = student.studentGrade;
+            row.insertCell().textContent = student.gpa;
+        }
+
+        gradeInput.addEventListener('input', () => {
+            const percentage = parseFloat(gradeInput.value);
+            const gpa = calculateGPA(percentage);
+            calculatedGPAElement.textContent = isNaN(gpa) ? '---' : gpa.toFixed(2);
+        });
+
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            if (!validateForm()) return;
+
+            const submitButton = form.querySelector('button[type="submit"]');
+            submitButton.disabled = true;
+            submitButton.textContent = 'Submitting...';
+
+            const formData = new FormData(form);
+
+            const impreciseGrade = parseFloat(formData.get('studentGrade'));
+            const cleanGrade = impreciseGrade.toFixed(2);
+            formData.set('studentGrade', cleanGrade);
+
+            const gpa = calculateGPA(impreciseGrade);
+            formData.append('gpa', gpa.toFixed(2));
+
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => response.text())
+                .then(result => {
+                    console.log('Result:', result);
+                    alert('Data submitted successfully');
+                    const newStudent = Object.fromEntries(formData.entries());
+                    addStudentRowToTable(newStudent);
+                    form.reset();
+                    calculatedGPAElement.textContent = '---';
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while submitting. Please try again.');
+                })
+                .finally(() => {
+                    submitButton.disabled = false;
+                    submitButton.textContent = 'Submit Data';
+                });
+        });
+    </script>
+</body>
+
+</html>
